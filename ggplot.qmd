@@ -1,0 +1,174 @@
+---
+title: "Aula 3"
+format: html
+editor: visual
+---
+
+Bibliotecas e Dados:
+
+```{r, warning=FALSE}
+library(tidyverse)
+library(gapminder)
+library(ggthemes)
+data(gapminder)
+```
+
+# Tipos de Gráfico e sua aplicação no ggplot
+
+## Gráficos para Variáveis Qualitativas / Categóricas
+
+## Comparando Categorias
+
+### Barplot - Gráfico de barras
+
+Deixando a base de dados em formato tidy e aplicando algumas transformações nos dados:
+
+```{r}
+dados_grafico1 <- gapminder %>% 
+  filter(year == "2007") %>% 
+  mutate(pop_mi = pop/1000000) %>% 
+  select(country,pop_mi) %>% 
+  arrange(desc(pop_mi)) %>% 
+  top_n(5)
+```
+
+Produto final:
+
+```{r}
+gapminder %>% 
+  filter(year == "2007") %>% 
+  mutate(pop_mi = pop/1000000) %>% 
+  select(country,pop_mi) %>% 
+  arrange(desc(pop_mi)) %>% 
+  top_n(5) %>% 
+  ggplot(aes(x = reorder(country, -pop_mi), y = pop_mi))+
+  geom_col(fill = "orange", width = .7)+
+  theme_hc()+
+  scale_y_continuous(limits = c(0,1500))+
+  labs(title = "A China é o país mais populoso do mundo",
+       subtitle = "(milhões de pessoas - 2007)",
+       x = "",
+       y = "",
+       caption = "Fonte: Gapminder")+
+  theme(axis.ticks.x = element_blank())
+```
+
+### Gráfico de barras agrupadas
+
+```{r}
+gapminder %>% 
+  filter(year == 2007, continent != "Oceania") %>% 
+  mutate(expect = ifelse(lifeExp > 75,"> 80", "< 80")) %>% 
+  group_by(continent, expect) %>% 
+  summarise(media_pib = mean(gdpPercap)) %>% 
+  ggplot(aes(x = reorder(continent, media_pib), y = media_pib, fill = expect))+
+  geom_col(position = "dodge")+
+  theme_hc()+
+  labs(title = "PIB dos países com maior expectativa de vida é maior",
+       subtitle = "(PIB per capita médio)",
+       x="",
+       y = "",
+       fill = "Expectativa de vida")+
+  theme(axis.ticks.x = element_blank())
+```
+
+### Dotplot
+
+```{r}
+gapminder %>% 
+  filter(year == "2007") %>% 
+  select(country, gdpPercap) %>% 
+  top_n(20) %>% 
+  ggplot(aes(y = reorder(country, gdpPercap), x =gdpPercap))+
+  geom_point(color = "darkgrey")+
+  theme_hc()+
+  labs(title = "Noruega lidera ranking do PIB per Capita (2007)",
+       y = "",
+       x = "",
+       caption = "Fonte: Gapminder")
+
+```
+
+# Tempo
+
+## Gráfico de Linha
+
+```{r}
+gapminder %>% 
+  filter(country %in% c("Brazil","India", "China")) %>% 
+  select(year,lifeExp,country) %>% 
+  ggplot(aes(x = year, y = lifeExp, color = country))+
+  geom_line()+
+  theme_hc()
+```
+
+You can add options to executable code like this
+
+```{r}
+#| echo: false
+2 * 2
+```
+
+# Distribuição
+
+## Histograma
+
+```{r}
+gapminder %>% 
+  filter(year == 2007) %>% 
+  ggplot(aes(x = lifeExp))+
+  geom_histogram(fill = "blue", col = "black")+
+  theme_hc()+
+  labs(title = "Expectativa de Vida em 2007",
+       x = "Expectativa de Vida",
+       y = "Frequência Absoluta")
+```
+
+## Density Plot
+
+```{r}
+gapminder %>% 
+  filter(year == 2007) %>% 
+  ggplot(aes(x = lifeExp))+
+  geom_density(col = "blue")+
+  theme_hc()+
+  labs(title = "Expectativa de Vida em 2007",
+       x = "Expectativa de Vida",
+       y = "Densidade")
+```
+
+## Boxplot
+
+```{r}
+gapminder %>% 
+  filter(year == 2007) %>% 
+  ggplot(aes(x = lifeExp))+
+  geom_boxplot()+
+  labs(title = "Expectativa de Vida em 2007",
+       x = "Expectativa de Vida")+
+  coord_flip()+
+  theme(axis.text.x=element_blank(),
+      axis.ticks.x=element_blank(),
+      panel.background = element_blank(),
+      axis.line.y = element_line(),
+      axis.line.x = element_line())
+```
+
+# Associação
+
+## Gráfico de Dispersão
+
+```{r}
+gapminder %>% 
+  filter(year == 2007) %>% 
+  ggplot(aes(x = gdpPercap, y = lifeExp))+
+  geom_point(col = "darkgreen")+
+  theme_hc()+
+  labs(x = "PIB per Capita",
+       y = "Expectativa de Vida",
+       title = "2007")+
+  theme(panel.grid.major.y = element_blank(),
+        axis.line.x = element_line(),
+        axis.line.y = element_line())
+
+```
